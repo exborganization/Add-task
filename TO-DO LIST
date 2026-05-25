@@ -10,3 +10,85 @@ def load_tasks():
     tasks = []
     if not os.path.exists(FILENAME):
         return tasks
+def save_all_tasks(tasks):
+    """Overwrites the file to update or delete records."""
+    try:
+        with open(FILENAME, "w") as file:
+            for task in tasks:
+                file.write(f"{task['name']}|{task['desc']}|{task['status']}\n")
+    except Exception as e:
+        messagebox.showerror("Error", f"Could not save tasks: {e}")
+
+def append_task_to_file(name, desc, status):
+    """Appends a single new task record to the text file."""
+    try:
+        with open(FILENAME, "a") as file:
+            file.write(f"{name}|{desc}|{status}\n")
+    except Exception as e:
+        messagebox.showerror("Error", f"Could not save new task: {e}")
+
+
+# --- GUI APPLICATION CLASS ---
+class TodoApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("GUI To-Do List System")
+        self.root.geometry("650x450")
+        self.root.config(bg="#f0f0f0")
+        
+        # Load existing records
+        self.tasks = load_tasks()
+        
+        # --- UI LAYOUT ---
+        # Input Frame (Top)
+        input_frame = tk.LabelFrame(root, text=" Add New Task ", font=("Arial", 10, "bold"), bg="#f0f0f0", padx=10, pady=10)
+        input_frame.pack(fill="x", padx=15, pady=10)
+        
+        tk.Label(input_frame, text="Task Name:", bg="#f0f0f0").grid(row=0, column=0, sticky="w", pady=2)
+        self.entry_name = tk.Entry(input_frame, width=30)
+        self.entry_name.grid(row=0, column=1, pady=2, padx=5)
+        
+        tk.Label(input_frame, text="Description:", bg="#f0f0f0").grid(row=1, column=0, sticky="w", pady=2)
+        self.entry_desc = tk.Entry(input_frame, width=50)
+        self.entry_desc.grid(row=1, column=1, pady=2, padx=5)
+        
+        btn_add = tk.Button(input_frame, text="Add Task", command=self.add_task, bg="#4CAF50", fg="white", width=12, relief="groove")
+        btn_add.grid(row=1, column=2, padx=10)
+        
+        # Display Treeview Frame (Middle)
+        tree_frame = tk.Frame(root)
+        tree_frame.pack(fill="both", expand=True, padx=15, pady=5)
+        
+        # Setup columns for task management scope
+        columns = ("name", "desc", "status")
+        self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings", selectmode="browse")
+        self.tree.heading("name", text="Task Name")
+        self.tree.heading("desc", text="Description")
+        self.tree.heading("status", text="Status")
+        
+        self.tree.column("name", width=150)
+        self.tree.column("desc", width=350)
+        self.tree.column("status", width=100, anchor="center")
+        
+        # Add scrollbar
+        scrollbar = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scrollbar.set)
+        
+        self.tree.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Action Buttons Frame (Bottom)
+        btn_frame = tk.Frame(root, bg="#f0f0f0")
+        btn_frame.pack(fill="x", padx=15, pady=15)
+        
+        btn_complete = tk.Button(btn_frame, text="Mark as Completed", command=self.mark_completed, bg="#2196F3", fg="white", width=18, pady=5)
+        btn_complete.pack(side="left", padx=5)
+        
+        btn_delete = tk.Button(btn_frame, text="Delete Task", command=self.delete_task, bg="#f44336", fg="white", width=15, pady=5)
+        btn_delete.pack(side="left", padx=5)
+        
+        btn_exit = tk.Button(btn_frame, text="Exit App", command=root.quit, bg="#757575", fg="white", width=12, pady=5)
+        btn_exit.pack(side="right", padx=5)
+        
+        # Initial population of the tree view
+        self.refresh_treeview()
