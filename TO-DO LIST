@@ -1,0 +1,41 @@
+import tkinter as tk
+from tkinter import messagebox
+
+FILE_NAME = "tasks.txt"
+
+class TodoApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Simple To-Do System")
+        self.root.geometry("400x450")
+
+        # UI Elements
+        tk.Label(root, text="Task Name:", font=('bold', 10)).pack(pady=2)
+        self.ent_name = tk.Entry(root, width=40)
+        self.ent_name.pack()
+
+        tk.Label(root, text="Description:", font=('bold', 10)).pack(pady=2)
+        self.ent_desc = tk.Entry(root, width=40)
+        self.ent_desc.pack()
+
+        # Buttons
+        btn_frame = tk.Frame(root)
+        btn_frame.pack(pady=10)
+        
+        tk.Button(btn_frame, text="Add Task", command=self.add_task, bg="lightgreen").pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="Mark Done", command=self.mark_done, bg="lightblue").pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="Delete", command=self.delete_task, bg="salmon").pack(side=tk.LEFT, padx=5)
+
+        # Listbox to display tasks
+        self.listbox = tk.Listbox(root, width=50, height=15)
+        self.listbox.pack(pady=5, padx=10)
+
+        self.load_tasks()
+
+    def add_task(self):
+        name = self.ent_name.get().strip()
+        desc = self.ent_desc.get().strip()
+        
+        if not name or not desc:
+            messagebox.showwarning("Validation Error", "Fields cannot be empty!")
+            return
